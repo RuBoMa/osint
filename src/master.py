@@ -41,7 +41,7 @@ def main():
         result = lookup_ip(args.ipaddress)
         output = format_ip(result)
         print(output)
-        print(f"IP Address search: {args.ipaddress}")
+        # print(f"IP Address search: {args.ipaddress}")
     
     # Handle username search
     elif args.username:
