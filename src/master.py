@@ -1,7 +1,8 @@
 import argparse
 import os
+from tools.domain import domain_enum, enumerate_subdomains
 from tools.ip_address import lookup_ip, format_ip, resolve_target
-from tools.username import format_username_results, search_username, check_platform
+from tools.username import format_username_results, search_username
 
 OUTPUT_DIR = "output"
 
@@ -63,11 +64,29 @@ def main():
     
     # Handle domain enumeration
     elif args.domain:
-        print(f"Domain enumeration: {args.domain}")
+        results = domain_enum(args.domain)
+
+        output_lines = []
+        output_lines.append(f"Domain Enumeration Results for {args.domain}")
+        output_lines.append("-" * 50)
+
+    for r in results:
+        output_lines.append(f"Subdomain: {r['subdomain']}")
+        output_lines.append(f"  IP: {r['ip']}")
+        output_lines.append(f"  Possible Takeover: {r['possible_takeover']}")
+
+        ssl_info = r.get("ssl")
+        if ssl_info:
+            output_lines.append(f"  SSL Issuer: {ssl_info.get('issuer')}")
+            output_lines.append(f"  SSL Expiry: {ssl_info.get('notAfter')}")
+
+        output_lines.append("")
+
+        result_text = "\n".join(output_lines)
+        print(result_text)
     
     else:
         print("No search criteria provided. Use -h for help.")
-
 
     if args.output and result_text:
         os.makedirs(OUTPUT_DIR, exist_ok=True)

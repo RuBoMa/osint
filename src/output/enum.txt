@@ -1,0 +1,19 @@
+Domain Enumeration Results for tesla.com
+--------------------------------------------------
+Subdomain: www.tesla.com
+  IP: 184.25.192.59
+  Possible Takeover: False
+  SSL Issuer: {'countryName': 'US', 'organizationName': 'DigiCert Inc', 'organizationalUnitName': 'www.digicert.com', 'commonName': 'GeoTrust TLS RSA CA G1'}
+  SSL Expiry: Nov 17 23:59:59 2026 GMT
+
+Subdomain: shop.tesla.com
+  IP: 184.25.192.59
+  Possible Takeover: False
+  SSL Issuer: {'countryName': 'US', 'organizationName': 'DigiCert Inc', 'organizationalUnitName': 'www.digicert.com', 'commonName': 'GeoTrust TLS RSA CA G1'}
+  SSL Expiry: Nov 17 23:59:59 2026 GMT
+
+Subdomain: static.tesla.com
+  IP: 184.25.192.59
+  Possible Takeover: False
+  SSL Issuer: {'countryName': 'US', 'organizationName': 'DigiCert Inc', 'organizationalUnitName': 'www.digicert.com', 'commonName': 'GeoTrust TLS RSA CA G1'}
+  SSL Expiry: Nov 17 23:59:59 2026 GMT
