@@ -3,6 +3,7 @@ import os
 from tools.domain import domain_enum
 from tools.ip_address import lookup_ip, format_ip, resolve_target
 from tools.username import format_username_results, search_username
+from utils.pdf import save_as_pdf
 
 OUTPUT_DIR = "output"
 
@@ -11,13 +12,16 @@ def parse_args():
 Usage Examples:
     
   Search for information by IP address:
-    python3 OSINT-Master.py -i 192.168.1.1 -o output_ip.txt
+    python3 master.py -i 192.168.1.1 -o output_ip
     
   Search for information by username:
-    python3 OSINT-Master.py -u @john_doe -o output_username.txt
+    python3 master.py -u @john_doe -o output_username
     
   Enumerate subdomains and check for takeover risks:
-    python3 OSINT-Master.py -d example.com -o output_domain.txt
+    python3 master.py -d example.com -o output_domain
+    
+  Generate PDF output:
+    python3 master.py -i 192.168.1.1 -o output_ip --pdf
     """
     
     parser = argparse.ArgumentParser(
@@ -26,21 +30,18 @@ Usage Examples:
         formatter_class=argparse.RawDescriptionHelpFormatter
     )
 
-    parser.add_argument("-i", "--ipaddress", help="Search for information by Ip address")
-
+    parser.add_argument("-i", "--ipaddress", help="Search for information by IP address")
     parser.add_argument("-u", "--username", help="Search for information by username")
-
     parser.add_argument("-d", "--domain", help="Enumerate subdomains and check for takeover risks")
-
-    parser.add_argument("-o", "--output", help="Output file")
-
+    parser.add_argument("-o", "--output", help="Output file name (without extension)")
+    parser.add_argument("-p", "--pdf", action="store_true", help="Export results as PDF instead of text")
 
     return parser.parse_args()
 
 
 def main():
     args = parse_args()
-    result_text = None #store final printable output
+    result_text = None  # store final printable output
 
     # Handle IP address lookup
     if args.ipaddress:
@@ -60,7 +61,6 @@ def main():
         result_text = format_username_results(data)
         print(result_text)
         
-    
     # Handle domain enumeration
     elif args.domain:
         results = domain_enum(args.domain)
@@ -92,15 +92,25 @@ def main():
     else:
         print("No search criteria provided. Use -h for help.")
 
+    # Save output to file
     if args.output and result_text:
         try:
             os.makedirs(OUTPUT_DIR, exist_ok=True)
-            file_path = os.path.join(OUTPUT_DIR, args.output)
-            with open(file_path, "w") as f:
-                f.write(result_text)
+            
+            # Determine file extension based on --pdf flag
+            if args.pdf:
+                file_path = os.path.join(OUTPUT_DIR, f"{args.output}.pdf")
+                save_as_pdf(file_path, result_text)
+            else:
+                file_path = os.path.join(OUTPUT_DIR, f"{args.output}.txt")
+                with open(file_path, "w") as f:
+                    f.write(result_text)
+            
             print(f"Results saved to {file_path}")
         except (IOError, OSError, PermissionError) as e:
-            print(f"Error writing to file {args.output}: {str(e)}")
+            print(f"Error writing file: {str(e)}")
+        except ImportError as e:
+            print(f"Error: {str(e)}")
 
 if __name__ == "__main__":
     main()
