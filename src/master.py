@@ -1,5 +1,8 @@
 import argparse
-from tools.ip_address import lookup_ip, format_ip
+import os
+from tools.ip_address import lookup_ip, format_ip, resolve_target
+
+OUTPUT_DIR = "output"
 
 def parse_args():
     usage_examples = """
@@ -35,12 +38,19 @@ Usage Examples:
 
 def main():
     args = parse_args()
-    
+    result_text = None #store final printable output
+
     # Handle IP address lookup
     if args.ipaddress:
-        result = lookup_ip(args.ipaddress)
-        output = format_ip(result)
-        print(output)
+        resolved = resolve_target(args.ipaddress)
+        if error := resolved.get("error"):
+            print(f"Error: {error}")
+            return
+        
+        output = lookup_ip(resolved["ip"])
+        result = format_ip(output)
+        print(result)
+        result_text = result
         # print(f"IP Address search: {args.ipaddress}")
     
     # Handle username search
@@ -55,10 +65,15 @@ def main():
         print("No search criteria provided. Use -h for help.")
 
 
-    if getattr(args, "output", None):
-        with open(args.output, "w") as f:
-            f.write(output)
-        print(f"Results saved to {args.output}")
+    if args.output and result_text:
+        os.makedirs(OUTPUT_DIR, exist_ok=True)
+
+    file_path = os.path.join(OUTPUT_DIR, args.output)
+
+    with open(file_path, "w") as f:
+        f.write(result_text)
+
+    print(f"Results saved to {file_path}")
 
 if __name__ == "__main__":
     main()

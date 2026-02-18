@@ -1,6 +1,7 @@
 import os
 import requests
 import ipaddress
+import socket
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -18,6 +19,22 @@ def validate_ip(ip: str) -> bool:
         return True
     except ValueError:
         return False
+    
+def resolve_target(target: str) -> str:
+    if validate_ip(target):
+        return {"ip": target, "source": "ip"}
+    else:
+        ip = domain_to_ip(target)
+        if ip:
+            return {"ip": ip, "source": "domain", "domain": target}
+        else:
+            raise ValueError(f"Unable to resolve domain: {target}")
+    
+def domain_to_ip(domain: str) -> str:
+    try:
+        return socket.gethostbyname(domain)
+    except socket.gaierror:
+        return None
 
 def lookup_ipinfo(ip: str) -> dict:
     response = requests.get(
@@ -59,8 +76,8 @@ def lookup_abuse(ip: str) -> dict:
 
 
 def lookup_ip(ip: str) -> dict:
-    if not validate_ip(ip):
-        return {"error": f"Invalid IP address: {ip}"}
+    # if not validate_ip(ip):
+    #     return {"error": f"Invalid IP address: {ip}"}
 
     try:
         result = {"ip": ip}
