@@ -137,6 +137,30 @@ def gitlab_lookup(username: str) -> dict:
     except requests.RequestException:
         return {"exists": False}
 
+def devto_lookup(username: str) -> dict:
+    username = username.lstrip("@").strip()
+
+    url = "https://dev.to/api/users/by_username"
+    params = {"url": username}
+
+    try:
+        r = requests.get(url, params=params, timeout=5)
+
+        if r.status_code == 404:
+            return {"exists": False}
+
+        r.raise_for_status()
+        user = r.json()
+
+        return {
+            "exists": True,
+            "profile_url": user.get("profile_image"),
+            "name": user.get("name") or "No name",
+            "bio": user.get("summary") or "No bio",
+        }
+
+    except requests.RequestException:
+        return {"exists": False}
 
 def search_username(username: str) -> dict:
     username = normalize_username(username)
@@ -146,9 +170,10 @@ def search_username(username: str) -> dict:
     results["reddit"] = reddit_lookup(username)
     results["stackoverflow"] = stackoverflow_lookup(username)
     results["gitlab"] = gitlab_lookup(username)
-
+    results["devto"] = devto_lookup(username)
+    
     for platform, url in PLATFORMS.items():
-        if platform in ["github", "reddit", "stackoverflow", "gitlab"]:
+        if platform in ["github", "reddit", "stackoverflow", "gitlab", "hackerrank", "devto"]:
             continue
 
         profile_url = url.format(username)
@@ -190,6 +215,9 @@ def format_username_results(results: dict) -> str:
             output.append(f"  Name: {data.get('name')}")
             output.append(f"  Bio: {data.get('bio')}")
             output.append(f"  Followers: {data.get('followers')}")
-        
+        elif platform == "devto" and data.get("exists"):
+            output.append(f"  Profile URL: {data.get('profile_url')}")
+            output.append(f"  Name: {data.get('name')}")
+            output.append(f"  Bio: {data.get('bio')}")
     return "\n".join(output)
 

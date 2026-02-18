@@ -1,15 +1,21 @@
-Github: Not Found
+Github: Found
+  Profile URL: https://github.com/richardpascoe
+  Name: Richard Pascoe
+  Bio: Computer hobbyist diving into Python and web development.
+  Followers: 0
+  Public Repos: 4
+  Last Activity: 5 days ago
 Reddit: Found
-  Profile URL: https://www.reddit.com/user/mazay0
+  Profile URL: https://www.reddit.com/user/richardpascoe
   Bio: No bio
-  Karma: 4
+  Karma: 3995
   Followers: 0
 Stackoverflow: Not Found
-Gitlab: Found
-  Profile URL: https://gitlab.com/Mazay0
-  Name: pvst
-  Bio: No bio
-  Followers: None
+Gitlab: Not Found
+Devto: Found
+  Profile URL: https://media2.dev.to/dynamic/image/width=320,height=320,fit=cover,gravity=auto,format=auto/https%3A%2F%2Fdev-to-uploads.s3.amazonaws.com%2Fuploads%2Fuser%2Fprofile_image%2F3689026%2F3359cbba-3c0a-4759-9889-0b30af7894cd.jpeg
+  Name: Richard Pascoe
+  Bio: Computer hobbyist diving into Python and web development.
 Twitter: Not Found
 Linkedin: Not Found
 Facebook: Found
