@@ -1,10 +1,19 @@
-IP Address: 1.1.1.1
-Country: AU
-City: Brisbane
-ISP: None
-Organization: AS13335 Cloudflare, Inc.
-AS: None
-Proxy: No
-Hosting: No
-Abuse Score: None
-Total Reports: None
+Domain Enumeration Results for tesla.com
+--------------------------------------------------
+Subdomain: www.tesla.com
+  IP: 95.100.176.58
+  Possible Takeover: False
+  SSL Issuer: DigiCert Inc (US) - GeoTrust TLS RSA CA G1
+  SSL Expiry: Nov 17 23:59:59 2026 GMT
+
+Subdomain: shop.tesla.com
+  IP: 95.100.176.58
+  Possible Takeover: False
+  SSL Issuer: DigiCert Inc (US) - GeoTrust TLS RSA CA G1
+  SSL Expiry: Nov 17 23:59:59 2026 GMT
+
+Subdomain: static.tesla.com
+  IP: 95.100.176.58
+  Possible Takeover: False
+  SSL Issuer: DigiCert Inc (US) - GeoTrust TLS RSA CA G1
+  SSL Expiry: Nov 17 23:59:59 2026 GMT
