@@ -53,7 +53,6 @@ def main():
         result = format_ip(output)
         print(result)
         result_text = result
-        # print(f"IP Address search: {args.ipaddress}")
     
     # Handle username search
     elif args.username:
@@ -94,11 +93,14 @@ def main():
         print("No search criteria provided. Use -h for help.")
 
     if args.output and result_text:
-        os.makedirs(OUTPUT_DIR, exist_ok=True)
-        file_path = os.path.join(OUTPUT_DIR, args.output)
-        with open(file_path, "w") as f:
-            f.write(result_text)
-        print(f"Results saved to {file_path}")
+        try:
+            os.makedirs(OUTPUT_DIR, exist_ok=True)
+            file_path = os.path.join(OUTPUT_DIR, args.output)
+            with open(file_path, "w") as f:
+                f.write(result_text)
+            print(f"Results saved to {file_path}")
+        except (IOError, OSError, PermissionError) as e:
+            print(f"Error writing to file {args.output}: {str(e)}")
 
 if __name__ == "__main__":
     main()

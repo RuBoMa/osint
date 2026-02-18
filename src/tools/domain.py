@@ -21,10 +21,12 @@ def brute_force_subdomains(domain: str) -> list:
             socket.gethostbyname(full_domain)
             found.append(full_domain)
         except socket.gaierror:
+            # Domain does not exist
             continue
 
     return found
 
+# gets SSL (Secure Sockets Layer) certificate by connecting to the server and performing a TLS handshake.
 def get_ssl_info(hostname: str):
     try:
         context = ssl.create_default_context()
@@ -39,13 +41,21 @@ def get_ssl_info(hostname: str):
             "notAfter": cert.get("notAfter"),
         }
 
-    except Exception:
+    except (ssl.SSLError, socket.error, ConnectionRefusedError, TimeoutError) as e:
+        # SSL errors, connection failures, timeouts
+        return None
+    except Exception as e:
+        # Catch any other unexpected errors
         return None
     
 def check_takeover(subdomain: str) -> bool:
     try:
-        r = requests.get(f"http://{subdomain}", timeout=5)
-        text = r.text.lower()
+        response = requests.get(f"http://{subdomain}", timeout=5)
+        # Check status code to ensure we got a response body
+        if response.status_code >= 400:
+            return False
+        
+        text = response.text.lower()
 
         takeover_signatures = [
             "no such bucket",
@@ -57,6 +67,10 @@ def check_takeover(subdomain: str) -> bool:
         return any(sig in text for sig in takeover_signatures)
 
     except requests.RequestException:
+        # Network error, timeout, or connection failure
+        return False
+    except Exception:
+        # Catch any other unexpected errors
         return False
 
 def domain_enum(domain: str):

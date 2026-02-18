@@ -65,14 +65,20 @@ def lookup_abuse(ip: str) -> dict:
     headers = {"Key": ABUSE_KEY, "Accept": "application/json"}
     params = {"ipAddress": ip, "maxAgeInDays": 90}
 
-    response = requests.get(ABUSE_URL, headers=headers, params=params, timeout=5)
-    data = response.json().get("data", {})
+    try:
+        response = requests.get(ABUSE_URL, headers=headers, params=params, timeout=5)
+        response.raise_for_status()  # raise error for 4xx/5xx status codes
+        data = response.json().get("data", {})
 
-    return {
-        "abuse_score": data.get("abuseConfidenceScore"),
-        "total_reports": data.get("totalReports"),
-        "last_reported": data.get("lastReportedAt"),
-    }
+        return {
+            "abuse_score": data.get("abuseConfidenceScore"),
+            "total_reports": data.get("totalReports"),
+            "last_reported": data.get("lastReportedAt"),
+        }
+    except (requests.RequestException, ValueError) as e:
+        # RequestException: network/timeout error
+        # ValueError: JSON decode error
+        return {"error": f"AbuseIPDB lookup failed: {str(e)}"}
 
 
 def lookup_ip(ip: str) -> dict:
