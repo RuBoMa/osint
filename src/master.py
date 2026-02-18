@@ -1,6 +1,7 @@
 import argparse
 import os
 from tools.ip_address import lookup_ip, format_ip, resolve_target
+from tools.username import format_username_results, search_username, check_platform
 
 OUTPUT_DIR = "output"
 
@@ -55,7 +56,9 @@ def main():
     
     # Handle username search
     elif args.username:
-        print(f"Username search: {args.username}")
+        data = search_username(args.username)
+        result_text = format_username_results(data)
+        print(result_text)
     
     # Handle domain enumeration
     elif args.domain:
