@@ -1,9 +1,11 @@
 import argparse
 import os
 from tools.domain import domain_enum
-from tools.ip_address import lookup_ip, format_ip, resolve_target
+from tools.ip_address import lookup_ip
 from tools.username import format_username_results, search_username
 from utils.pdf import save_as_pdf
+from utils.validators import resolve_target
+from utils.formatters import format_ip
 
 OUTPUT_DIR = "output"
 

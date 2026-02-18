@@ -1,8 +1,7 @@
 import requests
 import ssl
 import socket
-# import time
-from tools.ip_address import domain_to_ip
+from utils.validators import domain_to_ip
 
 COMMON_SUBDOMAINS = [
     "www", "mail", "api", "dev", "test",
@@ -79,7 +78,6 @@ def domain_enum(domain: str):
 
     results = []
 
-    # Use brute force instead of crt.sh
     subs = brute_force_subdomains(domain)
 
     for sub in subs:

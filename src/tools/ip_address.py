@@ -1,7 +1,5 @@
 import os
 import requests
-import ipaddress
-import socket
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -12,29 +10,6 @@ ABUSE_KEY = os.getenv("ABUSEIPDB_API_KEY")
 IPINFO_URL = "https://ipinfo.io/"
 ABUSE_URL = "https://api.abuseipdb.com/api/v2/check"
 
-
-def validate_ip(ip: str) -> bool:
-    try:
-        ipaddress.ip_address(ip)
-        return True
-    except ValueError:
-        return False
-    
-def resolve_target(target: str) -> str:
-    if validate_ip(target):
-        return {"ip": target, "source": "ip"}
-    else:
-        ip = domain_to_ip(target)
-        if ip:
-            return {"ip": ip, "source": "domain", "domain": target}
-        else:
-            raise ValueError(f"Unable to resolve domain: {target}")
-    
-def domain_to_ip(domain: str) -> str:
-    try:
-        return socket.gethostbyname(domain)
-    except socket.gaierror:
-        return None
 
 def lookup_ipinfo(ip: str) -> dict:
     response = requests.get(
@@ -82,9 +57,6 @@ def lookup_abuse(ip: str) -> dict:
 
 
 def lookup_ip(ip: str) -> dict:
-    # if not validate_ip(ip):
-    #     return {"error": f"Invalid IP address: {ip}"}
-
     try:
         result = {"ip": ip}
         result.update(lookup_ipinfo(ip))
@@ -92,21 +64,3 @@ def lookup_ip(ip: str) -> dict:
         return result
     except requests.RequestException as e:
         return {"error": str(e)}
-
-
-def format_ip(result: dict) -> str:
-    if "error" in result:
-        return f"Error: {result['error']}"
-
-    return (
-        f"IP Address: {result.get('ip')}\n"
-        f"Country: {result.get('country')}\n"
-        f"City: {result.get('city')}\n"
-        f"ISP: {result.get('isp')}\n"
-        f"Organization: {result.get('org')}\n"
-        f"AS: {result.get('as')}\n"
-        f"Proxy: {'Yes' if result.get('proxy') else 'No'}\n"
-        f"Hosting: {'Yes' if result.get('hosting') else 'No'}\n"
-        f"Abuse Score: {result.get('abuse_score')}\n"
-        f"Total Reports: {result.get('total_reports')}\n"
-    )
