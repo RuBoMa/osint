@@ -1,6 +1,7 @@
 import requests
 
-from src.utils.time_format import human_readable_time
+from utils.time_format import human_readable_time
+from urllib.parse import quote
 
 PLATFORMS = {
     "github": "https://api.github.com/users/{}",
@@ -54,16 +55,73 @@ def github_lookup(username: str) -> dict:
     except requests.RequestException:
         return {"exists": False}
     
+def reddit_lookup(username: str) -> dict:
+    username = normalize_username(username)
+    url = f"https://www.reddit.com/user/{username}/about.json"
+    headers = {"User-Agent": "osint-tool/1.0"}
 
+    try:
+        r = requests.get(url, headers=headers, timeout=5)
+        if r.status_code != 200:
+            return {"exists": False}
+
+        json_data = r.json()
+        data = json_data.get("data", {})
+
+        subreddit = data.get("subreddit", {})
+
+        profile_url = f"https://www.reddit.com{data.get('url', f'/user/{username}')}"
+
+        return {
+            "exists": True,
+            "profile_url": profile_url,
+            "bio": subreddit.get("public_description") or "No bio",
+            "karma": data.get("total_karma", 0),
+            "followers": subreddit.get("subscribers", 0),
+        }
+    except requests.RequestException:
+        return {"exists": False}
+    
+def stackoverflow_lookup(username: str) -> dict:
+    username = normalize_username(username)
+    username_encoded = quote(username)
+    url = f"https://api.stackexchange.com/2.3/users"
+    params = {
+        "inname": username_encoded,
+        "site": "stackoverflow"
+    }
+
+    try:
+        r = requests.get(url, params=params, timeout=5)
+        r.raise_for_status()
+        data = r.json().get("items", [])
+
+        # Try to find exact match ignoring case
+        user = next((u for u in data if u.get("display_name", "").lower() == username.lower()), None)
+        if not user:
+            return {"exists": False}
+
+        return {
+            "exists": True,
+            "profile_url": user.get("link"),
+            "name": user.get("display_name"),
+            "reputation": user.get("reputation"),
+            "badges": user.get("badge_counts"),
+        }
+    except requests.RequestException:
+        return {"exists": False}
+    
 
 def search_username(username: str) -> dict:
     username = normalize_username(username)
     results = {}
 
     results["github"] = github_lookup(username)
+    results["reddit"] = reddit_lookup(username)
+    results["stackoverflow"] = stackoverflow_lookup(username)
 
     for platform, url in PLATFORMS.items():
-        if platform == "github":
+        if platform in ["github", "reddit"]:
             continue
 
         profile_url = url.format(username)
@@ -89,6 +147,17 @@ def format_username_results(results: dict) -> str:
             output.append(f"  Followers: {data.get('followers')}")
             output.append(f"  Public Repos: {data.get('public_repos')}")
             output.append(f"  Last Activity: {human_readable_time(data.get('last_activity'))}")
+        elif platform == "reddit" and data.get("exists"):
+            output.append(f"  Profile URL: {data.get('profile_url')}")
+            output.append(f"  Bio: {data.get('bio')}")
+            output.append(f"  Karma: {data.get('karma')}")
+            output.append(f"  Followers: {data.get('followers')}")
+        elif platform == "stackoverflow" and data.get("exists"):
+            output.append(f"  Profile URL: {data.get('profile_url')}")
+            output.append(f"  Name: {data.get('name')}")
+            output.append(f"  Reputation: {data.get('reputation')}")
+            badges = data.get("badges", {})
+            output.append(f"  Badges: Gold {badges.get('gold', 0)}, Silver {badges.get('silver', 0)}, Bronze {badges.get('bronze', 0)}")
         
     return "\n".join(output)
 

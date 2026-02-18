@@ -59,6 +59,7 @@ def main():
         data = search_username(args.username)
         result_text = format_username_results(data)
         print(result_text)
+        
     
     # Handle domain enumeration
     elif args.domain:
@@ -70,13 +71,10 @@ def main():
 
     if args.output and result_text:
         os.makedirs(OUTPUT_DIR, exist_ok=True)
-
-    file_path = os.path.join(OUTPUT_DIR, args.output)
-
-    with open(file_path, "w") as f:
-        f.write(result_text)
-
-    print(f"Results saved to {file_path}")
+        file_path = os.path.join(OUTPUT_DIR, args.output)
+        with open(file_path, "w") as f:
+            f.write(result_text)
+        print(f"Results saved to {file_path}")
 
 if __name__ == "__main__":
     main()
