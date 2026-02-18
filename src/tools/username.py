@@ -83,7 +83,7 @@ def reddit_lookup(username: str) -> dict:
         return {"exists": False}
     
 def stackoverflow_lookup(username: str) -> dict:
-    username = normalize_username(username)
+    username = username.lstrip("@").lower()
     username_encoded = quote(username)
     url = f"https://api.stackexchange.com/2.3/users"
     params = {
@@ -110,7 +110,33 @@ def stackoverflow_lookup(username: str) -> dict:
         }
     except requests.RequestException:
         return {"exists": False}
-    
+
+def gitlab_lookup(username: str) -> dict:
+    username = username.lstrip("@")
+
+    url = "https://gitlab.com/api/v4/users"
+    params = {"username": username}  # exact lookup
+
+    try:
+        r = requests.get(url, params=params, timeout=5)
+        r.raise_for_status()
+        users = r.json()
+
+        if not users:
+            return {"exists": False}
+
+        user = users[0]  # exact match returns single-item list
+
+        return {
+            "exists": True,
+            "profile_url": user.get("web_url"),
+            "name": user.get("name") or "No name",
+            "bio": user.get("bio") or "No bio",
+        }
+
+    except requests.RequestException:
+        return {"exists": False}
+
 
 def search_username(username: str) -> dict:
     username = normalize_username(username)
@@ -119,9 +145,10 @@ def search_username(username: str) -> dict:
     results["github"] = github_lookup(username)
     results["reddit"] = reddit_lookup(username)
     results["stackoverflow"] = stackoverflow_lookup(username)
+    results["gitlab"] = gitlab_lookup(username)
 
     for platform, url in PLATFORMS.items():
-        if platform in ["github", "reddit"]:
+        if platform in ["github", "reddit", "stackoverflow", "gitlab"]:
             continue
 
         profile_url = url.format(username)
@@ -158,6 +185,11 @@ def format_username_results(results: dict) -> str:
             output.append(f"  Reputation: {data.get('reputation')}")
             badges = data.get("badges", {})
             output.append(f"  Badges: Gold {badges.get('gold', 0)}, Silver {badges.get('silver', 0)}, Bronze {badges.get('bronze', 0)}")
+        elif platform == "gitlab" and data.get("exists"):
+            output.append(f"  Profile URL: {data.get('profile_url')}")
+            output.append(f"  Name: {data.get('name')}")
+            output.append(f"  Bio: {data.get('bio')}")
+            output.append(f"  Followers: {data.get('followers')}")
         
     return "\n".join(output)
 
