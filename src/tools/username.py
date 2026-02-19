@@ -173,7 +173,7 @@ def search_username(username: str) -> dict:
     results["devto"] = devto_lookup(username)
     
     for platform, url in PLATFORMS.items():
-        if platform in ["github", "reddit", "stackoverflow", "gitlab", "hackerrank", "devto"]:
+        if platform in ["github", "reddit", "stackoverflow", "gitlab", "devto"]:
             continue
 
         profile_url = url.format(username)
@@ -186,38 +186,70 @@ def search_username(username: str) -> dict:
     return results
 
 def format_username_results(results: dict) -> str:
+    """Format username search results by platform.
+    
+    Uses a data-driven approach to render platform-specific fields,
+    making it easy to add new platforms or modify field display.
+    """
+    # Define what fields to show for each platform
+    # Format: {"display_label": "dict_key", ...}
+    PLATFORM_FIELDS = {
+        "github": {
+            "Profile URL": "url",
+            "Name": "name",
+            "Bio": "bio",
+            "Followers": "followers",
+            "Public Repos": "public_repos",
+            "Last Activity": "last_activity",
+        },
+        "reddit": {
+            "Profile URL": "profile_url",
+            "Bio": "bio",
+            "Karma": "karma",
+            "Followers": "followers",
+        },
+        "stackoverflow": {
+            "Profile URL": "profile_url",
+            "Name": "name",
+            "Reputation": "reputation",
+        },
+        "gitlab": {
+            "Profile URL": "profile_url",
+            "Name": "name",
+            "Bio": "bio",
+            "Followers": "followers",
+        },
+        "devto": {
+            "Profile URL": "profile_url",
+            "Name": "name",
+            "Bio": "bio",
+        },
+    }
+    
     output = []
-
     for platform, data in results.items():
         status = "Found" if data.get("exists") else "Not Found"
         output.append(f"{platform.capitalize()}: {status}")
-
-        if platform == "github" and data.get("exists"):
-            output.append(f"  Profile URL: {data.get('url')}")
-            output.append(f"  Name: {data.get('name')}")
-            output.append(f"  Bio: {data.get('bio')}")
-            output.append(f"  Followers: {data.get('followers')}")
-            output.append(f"  Public Repos: {data.get('public_repos')}")
-            output.append(f"  Last Activity: {human_readable_time(data.get('last_activity'))}")
-        elif platform == "reddit" and data.get("exists"):
-            output.append(f"  Profile URL: {data.get('profile_url')}")
-            output.append(f"  Bio: {data.get('bio')}")
-            output.append(f"  Karma: {data.get('karma')}")
-            output.append(f"  Followers: {data.get('followers')}")
-        elif platform == "stackoverflow" and data.get("exists"):
-            output.append(f"  Profile URL: {data.get('profile_url')}")
-            output.append(f"  Name: {data.get('name')}")
-            output.append(f"  Reputation: {data.get('reputation')}")
-            badges = data.get("badges", {})
-            output.append(f"  Badges: Gold {badges.get('gold', 0)}, Silver {badges.get('silver', 0)}, Bronze {badges.get('bronze', 0)}")
-        elif platform == "gitlab" and data.get("exists"):
-            output.append(f"  Profile URL: {data.get('profile_url')}")
-            output.append(f"  Name: {data.get('name')}")
-            output.append(f"  Bio: {data.get('bio')}")
-            output.append(f"  Followers: {data.get('followers')}")
-        elif platform == "devto" and data.get("exists"):
-            output.append(f"  Profile URL: {data.get('profile_url')}")
-            output.append(f"  Name: {data.get('name')}")
-            output.append(f"  Bio: {data.get('bio')}")
+        
+        if not data.get("exists"):
+            continue
+        
+        # Get field definitions for this platform
+        fields = PLATFORM_FIELDS.get(platform, {})
+        
+        for label, key in fields.items():
+            value = data.get(key)
+            
+            # Special formatters for specific fields
+            if key == "last_activity" and value:
+                value = human_readable_time(value)
+            elif key == "badges" and value:
+                badges = value or {}
+                value = f"Gold {badges.get('gold', 0)}, Silver {badges.get('silver', 0)}, Bronze {badges.get('bronze', 0)}"
+            
+            # Only append if value exists
+            if value:
+                output.append(f"  {label}: {value}")
+    
     return "\n".join(output)
 
